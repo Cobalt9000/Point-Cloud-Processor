@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point Cloud Processor</title>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; }
+        #upload-form { border: 2px dashed #ccc; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+        #option-select { display: block; width: 100%; margin-bottom: 20px; padding: 10px; }
+        #process-button { display: block; width: 100%; padding: 10px; background-color: #1c2ece; color: white; border: none; cursor: pointer; }
+        #process-button:hover { background-color: #1340d3; }
+    </style>
+</head>
+<body>
+    <h1>Point Cloud Processor</h1>
+    <form id="upload-form" class="dropzone">
+        <div class="fallback">
+            <input name="file" type="file" />
+        </div>
+    </form>
+    <select id="option-select">
+        <option value="1">E57 to LAS to Point Cloud</option>
+        <option value="2">LAS to Point Cloud</option>
+        <option value="3">View Point Cloud</option>
+    </select>
+    <button id="process-button" onclick="processFile()">Process</button>
+
+    <script>
+        Dropzone.options.myDropzone = {
+            url: "/process", // Set the URL to your Flask upload route
+        };
+        Dropzone.options.uploadForm = {
+            autoProcessQueue: false,
+            maxFiles: 1
+        };
+
+        function processFile() {
+            var form = document.querySelector('#upload-form');
+            var formData = new FormData(form);
+            formData.append('option', document.querySelector('#option-select').value);
+
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    window.open(data.viewer_url, '_blank');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
